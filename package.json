@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
+    "seed": "tsx apps/api/src/db/seed.ts",
     "build:widget": "vite build --config vite.widget.config.ts",
     "preview:widget": "vite preview"
   },
