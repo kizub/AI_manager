@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  owner     Owner?
+}
+
+model Owner {
+  id        String    @id @default(uuid())
+  userId    String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id])
+  projects  Project[]
+}
+
+model Project {
+  id            String               @id @default(uuid())
+  name          String
+  ownerId       String
+  createdAt     DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  subscriptionStatus String               @default("active")
+  chatMessages  ChatMessage[]
+  sessions      ChatSession[]
+  leads         Lead[]
+  owner         Owner                @relation(fields: [ownerId], references: [id])
+  aiConfig      ProjectAIConfig?
+  integrations  ProjectIntegration[]
+  widgetConfig  ProjectWidgetConfig?
+  sessionStates SessionState[]
+  subscription  Subscription?
+  deliveryLogs  DeliveryLog[]
+  leadEvents    LeadEvent[]
+}
+
+model ProjectAIConfig {
+  id        String   @id @default(uuid())
+  projectId String   @unique
+  model     String
+  prompt    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  project   Project  @relation(fields: [projectId], references: [id])
+}
+
+model ProjectWidgetConfig {
+  id        String   @id @default(uuid())
+  projectId String   @unique
+  config    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  project   Project  @relation(fields: [projectId], references: [id])
+}
+
+model ProjectIntegration {
+  id        String   @id @default(uuid())
+  projectId String
+  provider  String
+  config    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  project   Project  @relation(fields: [projectId], references: [id])
+}
+
+model ChatSession {
+  id        String        @id @default(uuid())
+  projectId String
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  messages  ChatMessage[]
+  project   Project       @relation(fields: [projectId], references: [id])
+  lead      Lead?
+  state     SessionState?
+}
+
+model ChatMessage {
+  id        String      @id @default(uuid())
+  projectId String
+  sessionId String
+  role      String
+  content   String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  session   ChatSession @relation(fields: [sessionId], references: [id])
+  project   Project     @relation(fields: [projectId], references: [id])
+}
+
+model SessionState {
+  id        String      @id @default(uuid())
+  projectId String
+  sessionId String      @unique
+  data      String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  session   ChatSession @relation(fields: [sessionId], references: [id])
+  project   Project     @relation(fields: [projectId], references: [id])
+}
+
+model Lead {
+  id        String       @id @default(uuid())
+  projectId String
+  sessionId String?      @unique
+  email     String?
+  name      String?
+  status    String       @default("new")
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  session   ChatSession? @relation(fields: [sessionId], references: [id])
+  project   Project      @relation(fields: [projectId], references: [id])
+  events    LeadEvent[]
+  deliveryLogs DeliveryLog[]
+}
+
+model LeadEvent {
+  id        String   @id @default(uuid())
+  leadId    String
+  projectId String
+  type      String
+  payload   String?
+  createdAt DateTime @default(now())
+  lead      Lead     @relation(fields: [leadId], references: [id])
+  project   Project  @relation(fields: [projectId], references: [id])
+}
+
+model DeliveryLog {
+  id        String   @id @default(uuid())
+  leadId    String
+  projectId String
+  status    String   // pending | sent | failed
+  error     String?
+  createdAt DateTime @default(now())
+  lead      Lead     @relation(fields: [leadId], references: [id])
+  project   Project  @relation(fields: [projectId], references: [id])
+}
+
+model Subscription {
+  id        String   @id @default(uuid())
+  projectId String   @unique
+  plan      String
+  status    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  project   Project  @relation(fields: [projectId], references: [id])
+}

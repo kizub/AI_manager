@@ -1,0 +1,9 @@
+<script
+  src="https://YOUR_WIDGET_DOMAIN/widget.js"
+  data-key="PROJECT_ID"
+  data-api="https://YOUR_API_DOMAIN"
+  async
+></script>
+
+- замінити PROJECT_ID на реальний projectId
+- замінити YOUR_API_DOMAIN на реальний домен API
